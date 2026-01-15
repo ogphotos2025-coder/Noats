@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Archive v4.7</title>
+    <style>
+        :root {
+            --bg: #050510;
+            --neural-pulse: #00d2ff;
+            --glass: rgba(15, 15, 35, 0.9);
+            --text: #e0e0e0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-image: radial-gradient(rgba(0, 210, 255, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .brain-card {
+            width: 90%;
+            max-width: 550px;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 40px;
+            padding: 40px;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            text-align: center;
+            position: relative;
+        }
+
+        .brain-glow {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 250px;
+            height: 100px;
+            background: var(--neural-pulse);
+            filter: blur(80px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 1.1rem;
+            resize: none;
+            outline: none;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            font-family: inherit;
+            margin-bottom: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .primary-btn {
+            background: var(--neural-pulse);
+            color: #000;
+        }
+
+        .review-btn {
+            background: transparent;
+            color: var(--neural-pulse);
+            border: 1px solid var(--neural-pulse);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .history {
+            width: 90%;
+            max-width: 550px;
+            margin-top: 30px;
+            background: var(--glass);
+            border-radius: 25px;
+            padding: 20px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .tag {
+            font-size: 0.6rem;
+            color: var(--neural-pulse);
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
+            text-transform: uppercase;
+        }
+
+        #status {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            min-height: 1.2em;
+        }
+
+        /* Security Modal */
+        .security-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .security-card {
+            background: var(--glass);
+            padding: 40px;
+            border-radius: 30px;
+            border: 1px solid var(--neural-pulse);
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 0 50px rgba(0, 210, 255, 0.2);
+        }
+
+        .key-input {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-family: monospace;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Security Modal -->
+    <div id="securityModal" class="security-overlay">
+        <div class="security-card">
+            <h2 style="color:var(--neural-pulse); margin-top:0;">NEURAL ACCESS</h2>
+            <p style="font-size:0.9rem; opacity:0.8;">Enter your OpenAI API Key to initialize system.</p>
+            <input type="password" id="apiKeyInput" class="key-input" placeholder="sk-..." autofocus>
+            <button class="primary-btn" onclick="saveKey()">Initialize</button>
+            <p style="font-size:0.7rem; opacity:0.5; margin-top:20px;">Key is stored locally in your browser.</p>
+        </div>
+    </div>
+
+    <div class="brain-card">
+        <div class="brain-glow"></div>
+        <h2 style="margin:0; font-weight:300; letter-spacing:3px;">NEURAL ARCHIVE</h2>
+        <p id="subheading" style="opacity:0.5; font-size:0.8rem; margin-bottom:25px;">Active Intelligent Note Organizer
+        </p>
+
+        <textarea id="noteInput" placeholder="Use - for multiple notes&#10;Press Cmd+Enter to fire..."
+            autofocus></textarea>
+
+        <div class="button-group">
+            <button class="primary-btn" id="sendBtn" onclick="handleInput()">Fire Synapse</button>
+            <button class="review-btn"
+                onclick="window.open('https://docs.google.com/spreadsheets/d/1b2ZC5AbYxmuIT7jlbvaxTZ37oB7UxCtWg5PxBhyyd4g/edit', '_blank')">Review
+                Sheet</button>
+        </div>
+        <div id="status"></div>
+    </div>
+
+    <div class="history">
+        <p style="font-size: 0.7rem; opacity: 0.4; letter-spacing: 1px; margin-bottom: 10px;">RECENT NEURAL ACTIVITY</p>
+        <div id="historyList"></div>
+    </div>
+
+    <script>
+        // Security Logic
+        let OPENAI_KEY = localStorage.getItem('neural_api_key');
+        const modal = document.getElementById('securityModal');
+
+        if (OPENAI_KEY) {
+            modal.style.display = 'none';
+        }
+
+        function saveKey() {
+            const input = document.getElementById('apiKeyInput');
+            const key = input.value.trim();
+            if (key.startsWith('sk-')) {
+                localStorage.setItem('neural_api_key', key);
+                OPENAI_KEY = key;
+                modal.style.display = 'none';
+                location.reload(); // Refresh to clean state
+            } else {
+                alert('Invalid Key format. Must start with sk-');
+            }
+        }
+        const GOOGLE_URL = 'https://script.google.com/macros/s/AKfycbyRD8CDU4h3QpEXh8wx5DE87OXAajRj3xkxDRKpCYTxM3MDA6HI8FVzH4Elzr_NjfI9AQ/exec';
+
+        // 1. Command + Enter Support
+        document.getElementById('noteInput').addEventListener('keydown', function (e) {
+            if ((e.metaKey || e.ctrlKey) && e.keyCode === 13) {
+                handleInput();
+            }
+        });
+
+        // 2. Multi-Note Logic
+        async function handleInput() {
+            const input = document.getElementById('noteInput');
+            const rawText = input.value.trim();
+            if (!rawText) return;
+
+            let notes = [];
+            if (rawText.includes('\n-') || rawText.startsWith('-')) {
+                notes = rawText.split('\n-').map(n => n.replace(/^-/, '').trim()).filter(n => n);
+            } else {
+                notes = [rawText];
+            }
+
+            input.value = ""; // Clear immediately for UX
+            for (let note of notes) {
+                await processThought(note);
+            }
+        }
+
+        async function processThought(content) {
+            const status = document.getElementById('status');
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            status.innerHTML = `<em>Processing: "${content.substring(0, 20)}..."</em>`;
+
+            try {
+                const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_KEY}` },
+                    body: JSON.stringify({
+                        model: "gpt-4o-mini",
+                        messages: [{
+                            role: "system",
+                            content: `Today is ${new Date().toISOString().split('T')[0]}. Categorize as: Event, Task, Contact, Grocery, Translation, Idea, Work, Health, Personal, Financial, Travel, or Journal. 
+                        Rules:
+                        1. INTELLIGENTLY INTERPRET slang/abbreviations.
+                        2. If input is about buying food/consumables (e.g., "buy eggs", "get milk"), categorize as "Grocery".
+                        3. If input is contact info (phone, email, address) OR social handle (e.g., "@bo"), categorize as "Contact".
+                        4. TRANSLATION: 
+                           - If input is in a foreign language (e.g. Spanish), translate it to English for the "summary". 
+                           - If the intent is actionable (e.g. "Comprar leche" -> "Buy milk"), use the specific category (e.g. "Grocery"). 
+                           - If purely a statement/phrase without other intent, categorize as "Translation".
+                        5. If input contains time/date for a meeting, categorize as "Event".
+                        6. Default to "Task" for actionable items without time.
+                        7. CRITICAL: Extract "action_date" as YYYY-MM-DD.
+                        8. CRITICAL: Extract "action_time" as HH:mm (24-hour format). DO NOT use AM/PM. Example: use "14:00" not "2:00 PM".
+                        9. PRIORITY: Determine priority based on urgency/importance words (e.g. "urgent", "asap", "important" -> "High"; "maybe", "sometime" -> "Low"; default -> "Medium").
+                        Return JSON: {category, summary, action_date, action_time, priority}`
+                        }, { role: "user", content: content }],
+                        response_format: { type: "json_object" }
+                    })
+                });
+
+                let data;
+                if (res.ok) {
+                    const aiRes = await res.json();
+                    data = JSON.parse(aiRes.choices[0].message.content);
+                } else {
+                    data = { category: "Journal", summary: content.substring(0, 30), action_date: new Date().toISOString().split('T')[0] };
+                }
+
+                data.verbatim = content;
+                data.timestamp = timestamp; // Add timestamp to data
+
+                // Transmit to Google
+                await fetch(GOOGLE_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(data)
+                });
+
+                saveToLocal(data);
+                renderHistory();
+                status.innerHTML = `<span style='color:#00ff88'>✅ ARCHIVED AT ${timestamp}</span>`;
+
+            } catch (e) {
+                status.innerHTML = "<span style='color:#ff4d4d'>❌ SYNC FAILED</span>";
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function saveToLocal(data) {
+            let history = JSON.parse(localStorage.getItem('neuralHistoryV9') || '[]');
+            history.unshift(data);
+            localStorage.setItem('neuralHistoryV9', JSON.stringify(history.slice(0, 8)));
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            const history = JSON.parse(localStorage.getItem('neuralHistoryV9') || '[]');
+            list.innerHTML = history.map(item => {
+                let displaySummary = item.summary;
+                // Linkify emails
+                displaySummary = displaySummary.replace(/([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/g, '<a href="mailto:$1" style="color:#00d2ff">$1</a>');
+                // Linkify phone numbers (simple pattern)
+                displaySummary = displaySummary.replace(/(\b\d{3}[-.]?\d{3}[-.]?\d{4}\b)/g, '<a href="tel:$1" style="color:#00d2ff">$1</a>');
+
+                return `
+            <div class="history-item">
+                <div style="text-align: left;">
+                    <div style="font-size: 0.85rem;">${displaySummary}</div>
+                    <div style="font-size: 0.6rem; opacity: 0.4;">${item.timestamp} | ${item.action_date || ''}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:5px;">
+                    ${item.priority ? `<span class="tag" style="border-color:${getPriorityColor(item.priority)}; color:${getPriorityColor(item.priority)}">${item.priority}</span>` : ''}
+                    <span class="tag" style="border-color:${getCategoryColor(item.category)}; color:${getCategoryColor(item.category)}">${item.category}</span>
+                </div>
+            </div>
+        `}).join('');
+        }
+
+        function getPriorityColor(p) {
+            if (p === 'High') return '#ff4d4d';
+            if (p === 'Medium') return '#ff9d00';
+            return '#00d2ff';
+        }
+
+        function getCategoryColor(cat) {
+            if (cat === 'Grocery') return '#ff9d00'; // Orange for food
+            if (cat === 'Contact') return '#d600ff'; // Purple for people
+            if (cat === 'Event') return '#00ff88';   // Green for events
+            return '#00d2ff'; // Default Blue
+        }
+        window.onload = renderHistory;
+    </script>
+</body>
+
+</html>
